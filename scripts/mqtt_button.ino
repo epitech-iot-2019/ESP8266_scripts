@@ -9,7 +9,10 @@ void myConnectedCb();
 
 #define CLIENT_ID "ESP8266_Oui"
 
-MQTT myMqtt(CLIENT_ID, "broker.hivemq.com", 1883);
+MQTT myMqtt(CLIENT_ID, "mosquitto.marian-gappa.com", 1883);
+
+#define BROKER_USER "client_test"
+#define BROKER_PASSWORD "yolo"
 
 #define WIFI_SSID     "OnePlus 6 Oui"
 #define WIFI_PASSWORD "lolilol68"
@@ -45,11 +48,15 @@ void setup() {
   myMqtt.onData(myDataCb);
   
   Serial.println("connect mqtt...");
+  myMqtt.setUserPwd(BROKER_USER, BROKER_PASSWORD);
   myMqtt.connect();
 
-delay(10);
+  delay(10);
+
+  myMqtt.subscribe("/ESP8266_Oui/led");
 
   pinMode(PIN_BUTTON, INPUT_PULLUP);
+  pinMode(BUILTIN_LED, OUTPUT);
   previousButtonState = 0;
 }
 
@@ -92,7 +99,9 @@ void myPublishedCb()
 
 void myDataCb(String& topic, String& data)
 {
-  
+  if (topic == "/ESP8266_Oui/led") {
+    digitalWrite(BUILTIN_LED, data.toInt());
+  }
   Serial.print(topic);
   Serial.print(": ");
   Serial.println(data);
